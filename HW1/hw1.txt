@@ -1,0 +1,160 @@
+\documentclass[12pt]{article}
+
+% Packages
+\usepackage{amsmath, amssymb, mathtools}
+\usepackage{graphicx}
+\usepackage{physics}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{bm}
+
+% Geometry settings
+\geometry{letterpaper, margin=1in}
+
+% Title
+\title{ECE 148 Home 1}
+\author{Sanjot Bains}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+
+
+\section*{Problem 1: Orthogonal Decomposition}
+
+\subsection*{(a) Orthogonality of \( \{\psi_n(t)\} \)}
+
+We have a set of orthogonal basis functions defined as:
+\begin{equation}
+    \psi_n(t) = \text{sinc}\left( \frac{\omega_0 (t - n\Delta t)}{2} \right), \quad \Delta t = \frac{2\pi}{\omega_0}
+\end{equation}
+
+To show that the set \( \{\psi_n(t)\} \) forms an orthogonal basis, we show that the inner product is zero:
+\begin{equation}
+    \langle \psi_n(t), \psi_m(t) \rangle = \int_{-\infty}^{\infty} \psi_n(t) \psi_m(t) \, dt = 0 \quad \text{for } n \neq m
+\end{equation}
+
+\begin{itemize}
+    \item \( \psi_n(t) \) has Fourier transform of a rect function with a phase shift:
+    \begin{equation}
+        \Psi_n(\omega) = \frac{2\pi}{\omega_0} \cdot \mathrm{rect}\left(\frac{\omega}{\omega_0}\right) e^{-j n \Delta t \omega}
+    \end{equation}
+
+    \item By Parseval's Relation:
+    \begin{equation}
+        \langle \psi_n(t), \psi_m(t) \rangle = \frac{1}{2\pi} \int_{-\omega_0/2}^{\omega_0/2} \Psi_n(\omega) \Psi_m^*(\omega) \, d\omega
+    \end{equation}
+
+    \item Substituting and simplifying:
+    \begin{equation}
+        \langle \psi_n, \psi_m \rangle = \frac{2\pi}{\omega_0^2} \int_{-\omega_0/2}^{\omega_0/2} e^{-j(n-m)\Delta t\omega} \, d\omega = \frac{2\pi}{\omega_0^2} \cdot \frac{2\sin((n - m)\pi)}{(n - m)\pi} = 0 \quad \text{for } n \neq m
+    \end{equation}
+\end{itemize}
+
+\vspace{1em}
+\noindent\textbf{Conclusion:} sin\(((n-m)\pi) = 0\) for all \(n-m \neq 0\). Important to note that this is only true because \(n-m\) is always an integer. Thus, we have an orthogonal basis.
+
+\subsection*{(b) Validity of Transformations}
+
+\paragraph{Forward Conversion:}
+
+We define sampling of \( f(t) \) at \( t = n\Delta t \) as:
+\begin{equation}
+    f(n\Delta t) = \langle f(t), \psi_n(t) \rangle = \int_{-\infty}^{\infty} f(t) \psi_n(t) \, dt
+\end{equation}
+
+The sinc basis function is the IFT of an ideal lowpass filter (a rect function).
+\begin{equation}
+    \Psi_n(\omega) = \frac{2\pi}{\omega_0} \cdot \mathrm{rect}\left(\frac{\omega}{\omega_0}\right) e^{-j n \Delta t \omega}
+\end{equation}
+We use Parseval's relation to compute the inner product. Because the rect is real and even, \(\Psi_n^*(\omega = \Psi_n(\omega\). This bounds the integral to \( \pm \omega_0/2\), throws in the scalar and the phase component.
+Thus:
+\begin{equation}
+    f(n\Delta t) = \frac{1}{\omega_0} \int_{-\omega_0/2}^{\omega_0/2} F(\omega) e^{j n \Delta t \omega} \, d\omega
+\end{equation}
+
+\paragraph{Inverse Transform: Reconstruction}
+The inverse operation reconstructs \( f(t) \) from its samples using:
+\begin{equation}
+    f(t) = \sum_{n = -\infty}^{\infty} f(n\Delta t) \psi_n(t)
+\end{equation}
+
+Because the \( \psi_n(t) \) are orthogonal and centered at \( n\Delta t \), the sum produces an exact interpolation of \( f(t) \) in the Paley-Wiener space of functions bandlimited to \( [-\omega_0/2, \omega_0/2] \).
+
+
+
+\section*{Problem 2: Time Domain Partitioning}
+
+The time-domain function \( f(t) \) is a lowpass signal. It can be partitioned into \( N \) sub-components:
+\begin{equation}
+    f(t) = \sum_{n=1}^N f_n(t)
+\end{equation}
+
+Each of the \( f_n(t) \) has a spectrum that spans from \( -\omega_0/2 \) to \( +\omega_0/2 \), i.e. the total bandwidth is:
+\begin{equation}
+    B = \omega_0
+\end{equation}
+
+Now suppose each subcomponent is modulated by a single frequency term:
+\begin{equation}
+    \hat{f}(t) = \sum_{n=1}^N f_n(t) e^{j k_n \omega_0 t}
+\end{equation}
+
+\begin{itemize}
+    \item  Each of the N sub-components has an arbitrary spectrum within the bounds of \( \pm \omega_0/2 \). It does not matter what each spectrum looks like, just that it does not exceed those bounds.
+
+    \item Each sub-component is modulated independently by \(e^{j k_n \omega_0 t}\) and a copy is placed at the modulation frequency \( k_n\omega_0 \).
+
+    \item Sampling at rate \( \Delta t = 2\pi / \omega_0 \) places a copy of each of those individual spectra at each integer multiple of \( \omega_0 \). This renders a full copy of the \( f(t) \) spectrum centered on each \( k\omega_0 \).
+
+    \item Because we are sampling at exactly twice the maximum frequency in \( f(t) \), we may overlap on the very edge of the spectrum, but this is likely neglible.
+\end{itemize}
+
+\vspace{1em}
+\noindent\textbf{Conclusion:} Applying an ideal low-pass filter with cutoff frequencies of \( \pm \omega_0/2 \), perfectly recovers the original signal \( g(t) \).
+
+
+
+\section*{Problem 3: Application of Aliasing — Frequency-Domain Partition}
+
+\subsection*{(a) Sketch the Fourier Spectrum of \( g(t) \)}
+
+The function \( g(t) \) is a periodic lowpass signal, expressed as:
+\begin{equation}
+    g(t) = \sum_{n=-N}^{N} G_n e^{j n \omega_x t}
+\end{equation}
+where \( \omega_x \) is the fundamental frequency and \( G_n \) are Fourier coefficients. Its bandwidth is:
+\begin{equation}
+    B = 2N\omega_x < \omega_0
+\end{equation}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{spectrum.png}
+    \caption{Sketch of Fourier spectrum of \( g(t) \): Impulses at \( n\omega_x \) from \( -N\omega_x \) to \( N\omega_x \)}
+\end{figure}
+
+The Fourier spectrum of \( g(t) \) looks like \( 2N+1 \) impulses distributed evenly, with spacing \( \omega_x \), between \( -N\omega_x \) and \( N\omega_x \).
+
+\subsection*{(b) Spectrum of \( \hat{g}(t) \)}
+
+Now suppose we modulate each component with a frequency term \( e^{j k_n \omega_0 t} \), giving:
+\begin{equation}
+    \hat{g}(t) = \sum_{n=-N}^{N} G_n e^{j (n\omega_x + k_n\omega_0) t}
+\end{equation}
+
+\( \hat{g}(x) \) places the "origin" of each of those individual components at each respective \( k_n\omega_0 \). That is, the location of each impulse is at \( n\omega_x + k_n\omega_0 \). There are still only \( 2N+1 \) components.
+
+\subsection*{(c) Sampling and Filtering}
+\begin{itemize}
+    \item Sampling at rate \( \Delta t = 2\pi / \omega_0 \) places a copy of each one of those individual impulses at each integer multiple of \( \omega_0 \). This, in effect, renders a full copy of the \( 2N+1 \) impulses centered on each \( k\omega_0 \). 
+    \item Because \( \omega_0 > 2N\omega_x \) (the fundamental frequency of \( g(t) \)), there is no aliasing between adjacent sets of impulses; the sets do not overlap.
+\end{itemize}
+
+\vspace{1em}
+\noindent\textbf{Conclusion:} Passing the whole shebang through an ideal low-pass filter with cutoff frequencies of \( \pm \omega_0/2 \), recovers the original signal \( g(t) \) perfectly.
+
+
+\end{document}
