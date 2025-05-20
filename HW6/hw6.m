@@ -38,7 +38,8 @@ f_n = f(t_samples); % Sampled function values {f(n = 0, 1, ... , 15)}
         F(k) = DFT_{N = 16} {f(n)}
 %}
 
-F_k = fftshift(fft(f_n)); % F(k) = DFT of f(n = 0, 1, ... , 15)
+F_k = fft(f_n); % F(k) = DFT of f(n = 0, 1, ... , 15)
+F_k_shifted = fftshift(F_k);
 
 %% 1. Interpolation of the DFT Spectrum
 %{
@@ -59,12 +60,12 @@ f_a(1:16) = f_n;
         F_a(k) = DFT_{N = 64} {f_a(n)}
 %}
 
-F_a = fftshift(fft(f_a));
+F_a_shifted = fftshift(fft(f_a));
 
 F_a_plot = figure (1); % Create a new figure
-    plot(-32/64:1/64:31/64, abs(F_a), 'LineWidth', 2);
+    plot(-32/64:1/64:31/64, abs(F_a_shifted), 'b', 'LineWidth', 2);
     hold on
-    plot(-32/64:4/64:31/64, abs(F_k), 'LineWidth', 2);
+    plot(-32/64:4/64:31/64, abs(F_k_shifted), 'r', 'LineWidth', 2);
     xlabel('Normalized Frequency (\omega/2\pi)');
     ylabel('Magnitude of DFT');
     legend('64-point DFT', '16-point DFT', 'Location', 'best');
@@ -76,5 +77,71 @@ exportgraphics(F_a_plot, 'F_a.png', 'Resolution', 300);
 %% 2. Interpolation in Time Domain
 %{
     Extend the 16-point spectral sequence F(k) to 64 points by inserting 
-    48 zeros in the middle. The extended spectral sequence 
+    48 zeros in the middle. The extended spectral sequence is denoted as
+    F_b(k).
 %}
+
+F_b = zeros(1, 64);
+F_b(1:8) = F_k(1:8);
+F_b(57:64) = F_k(9:16);
+F_b = 4 * F_b;
+
+%{
+    Perform a 64-point inverse DFT to bring it back to the time domain
+
+        f_b(n) = IDFT_{N = 64} {F_b(k)}
+
+    Plot the 64-point sequence f_b(n). Compare f_b(n) with f(n) and 
+    summarize your observations.
+%}
+
+f_b = ifft(F_b);
+
+f_b_plot = figure (2);
+    n_64 = 0:0.25:15.75;
+    n_16 = 0:15;
+
+    plot(n_64, real(f_b), 'b-', 'LineWidth', 2); hold on;
+    stem(n_16, real(f_n), 'r', 'filled', 'LineWidth', 1.5);
+
+    xlabel('n');
+    ylabel('Amplitude');
+    legend('Interpolated f_b(n)', 'Original f_n', 'Location', 'best');
+    grid on;
+    set(gca, 'FontName', 'Times New Roman');
+exportgraphics(f_b_plot, 'f_b.png', 'Resolution', 300);
+
+%% Signal Scrambling
+%{
+    The objective of this exercise is to implement a simple digital 
+    speech scrambler.
+
+    We use the microphone of of our computer to record a short speech 
+    signal g(t), and digitize the speech signal with the A/D tool in
+    Audacity into the discrete form g(n).
+%}
+
+[g_n, f_s] = audioread('g_n.wav');
+
+G_k = fft(g_n);
+G_k_shifted = fftshift(G_k);
+
+N = length(g_n);
+f_axis = linspace(-f_s/2, f_s/2, N);
+
+G_k_plot = figure (3);
+    spectrum_db = 20*log10(abs(G_k_shifted) + eps);
+    spectrum_smooth = smoothdata(spectrum_db, 'gaussian', 100);
+    
+    plot(f_axis, spectrum_db, 'Color', [0.8 0.8 0.8], 'LineWidth', 0.5); hold on;
+    plot(f_axis, spectrum_smooth, 'b', 'LineWidth', 1);
+
+    xlabel('Frequency (Hz)');
+    ylabel('Magnitude (dB)');
+    title('Magnitude Spectrum of g(n)');
+    legend('Raw Spectrum', 'Smoothed Spectrum', 'Location', 'best');
+    grid on;
+
+    set(gca, 'XScale', 'log');
+    set(gca, 'FontName', 'Times New Roman');
+exportgraphics(G_k_plot, 'G_k.png', 'Resolution', 300);
