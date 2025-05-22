@@ -214,9 +214,28 @@ The Hilbert transform of the periodic signal $f(t)$ is computed and compared wit
     \caption{Original Signal and its Hilbert Transform}
 \end{figure}
 
+The real part of the two signals is identical, as expected.
+The imaginary parts, however differ greatly. $f(t)$ being an entirely real signal is constantly $0$, but the imaginary part of $\mathcal{H}\{f(t)\}$ is periodic with respect to $t$ correleted and sometimes inversely correlated to the real part.
+
 
 \newpage
 \subsection*{2. Speech Signal g(t)}
 The Hilbert transform is applied to the speech signal g(t), and the result is saved as an audio file for audible comparison.
 
+\begin{lstlisting}[language=Octave, caption=Hilbert Transform of $g(n)$]
+hilbert_g_n = hilbert(g_n);
+
+audiowrite('hilbert_g_n.wav', real(hilbert_g_n), f_s);
+\end{lstlisting}
+
+The audio is completely intelligible. In fact, it is the exact same becuase I had to use only the real part of the signal before MATLAB would let me call \lstinline[language=Octave]|audiowrite(.)|.
+
+\newpage
+\section*{Summary}
+\begin{itemize}
+    \item Demonstrated DFT-based interpolation in both frequency and time domains, showing how zero-padding increases resolution.
+    \item Implemented and analyzed a simple speech scrambling technique using multiplication by an alternating sequence.
+    \item Verified that descrambling restores the original speech, confirming the reversibility of the scrambling process.
+    \item Explored the Hilbert transform for both periodic and speech signals, observing effects on real and imaginary components.
+\end{itemize}
 \end{document}

@@ -247,23 +247,29 @@ subplot(2,1,1);
     plot(t, real(hilbert_f_t), 'r--', 'LineWidth', 1.5, ...
          'DisplayName', 'Hilbert Transform');
     xlabel('Time (t)');
-    ylabel('f(t)');
+    ylabel('Real f(t)');
     legend('Location', 'best');
     grid on;
     axis([0 T -36 36]);
     set(gca, 'FontName', 'Times New Roman');
     alpha(0.7); % Add transparency to both plots
-    title('Magnitude');
+    title('Real');
 
 subplot(2,1,2);
-    plot(t, angle(hilbert_f_t), 'k', 'LineWidth', 1.5);
+    plot(t, imag(f_t), 'b', 'LineWidth', 1.5);
+    hold on;
+    plot(t, imag(hilbert_f_t), 'r', 'LineWidth', 1.5)
+    % plot(t, angle(f_t)-angle(hilbert_f_t), 'k--', 'LineWidth', 1.5)
     xlabel('Time (t)');
-    ylabel('Phase (rad)');
+    ylabel('Imag f(t)');
     grid on;
-    axis([0 T -pi pi]*2); % Show a reasonable phase range
+    axis([0 T -inf inf]); % Show a reasonable phase range
     set(gca, 'FontName', 'Times New Roman');
-    title('Phase');
-
+    title('Imag');
+% Set figure size (width, height) in pixels to control aspect ratio
+width = 600;  % Desired width in pixels
+height = 600; % Desired height in pixels
+set(gcf, 'Position', [100 100 width height]); % [left, bottom, width, height]
 exportgraphics(f_t_plot, 'f_t.png', 'Resolution', 300)
 
 %% 2. Speech Signal g(t)
