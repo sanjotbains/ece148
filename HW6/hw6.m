@@ -123,7 +123,10 @@ exportgraphics(f_b_plot, 'f_b.png', 'Resolution', 300);
 
 [g_n, f_s] = audioread('g_n.wav');
 
-%% 1. Display the DFT spectrum G(k) of the digitized speech signal g(n).
+%% 1. DFT Spectrum
+%{
+    Display the DFT spectrum G(k) of the digitized speech signal g(n).
+%}
 
 G_k = fft(g_n);
 G_k_shifted = fftshift(G_k);
@@ -149,4 +152,45 @@ G_k_plot = figure (3);
     set(gca, 'FontName', 'Times New Roman');
 exportgraphics(G_k_plot, 'G_k.png', 'Resolution', 300);
 
-%% 2. 
+%% 2. Speech Scrambling
+%{
+    Apply the speech scrambling procedure to the digitized speech signal 
+    g(n) and display the DFT spectrum of the scrambled speech signal 
+    ĝ(n). Then use the D/A tool to convert it back to an analog signal 
+    to check if it is audible.
+%}
+    
+scrambling_seq = ones(size(g_n));
+scrambling_seq(2:2:end) = -1;
+
+g_hat_n = g_n .* scrambling_seq;
+
+G_hat_k = fft(g_hat_n);
+G_hat_k_shifted = fftshift(G_hat_k);
+
+figure(4);
+    spectrum_db = 20*log10(abs(G_hat_k_shifted) + eps);
+    spectrum_smooth = smoothdata(spectrum_db, 'gaussian', 100);
+    
+    plot(f_axis, spectrum_db, 'Color', [0.8 0.8 0.8], 'LineWidth', 0.5); 
+    hold on;
+    plot(f_axis, spectrum_smooth, 'b', 'LineWidth', 1);
+    
+    xlabel('Frequency (Hz)');
+    ylabel('Magnitude (dB)');
+    title('Spectrum of Scrambled Speech');
+    grid on;
+    set(gca, 'XScale', 'log');
+
+% Save scrambled audio
+audiowrite('g_hat_n.wav', g_hat_n, f_s);
+
+%% 3. Descrambling
+%{
+    The procedure for scrambling a discrete sequence is simply a 
+    multiplication process by the sequence. And we perform the 
+    descrambling process with the same sequence. It is common that the 
+    scrambling-descrambling process is not exactly synchronized and the 
+    offset produces an extra {-1} factor. It results in -g(t), instead 
+    of g(t). Check if it is audible when the offset occurs.
+%}
