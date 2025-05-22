@@ -1,7 +1,7 @@
 set(groot, 'DefaultAxesFontName', 'Times New Roman');
 set(groot, 'DefaultTextFontName', 'Times New Roman');
 
-%% Interpolation by DFT
+%% I. Interpolation by DFT
 %{
     Consider a real periodic signal f(t) of period T. The signal has 7
     harmonics, for m = 1, 2, 3, ... , 7.
@@ -111,7 +111,7 @@ f_b_plot = figure (2);
     set(gca, 'FontName', 'Times New Roman');
 exportgraphics(f_b_plot, 'f_b.png', 'Resolution', 300);
 
-%% Signal Scrambling
+%% II. Signal Scrambling
 %{
     The objective of this exercise is to implement a simple digital 
     speech scrambler.
@@ -142,13 +142,13 @@ G_k_plot = figure (3);
     hold on;
     plot(f_axis, spectrum_smooth, 'b', 'LineWidth', 1);
 
-    xlabel('Frequency (Hz)');
+    xlabel('Frequency (kHz)');
     ylabel('Magnitude (dB)');
     title('Magnitude Spectrum of g(n)');
     legend('Raw Spectrum', 'Smoothed Spectrum', 'Location', 'best');
     grid on;
 
-    set(gca, 'XScale', 'log');
+    % set(gca, 'XScale', 'log');
     set(gca, 'FontName', 'Times New Roman');
 exportgraphics(G_k_plot, 'G_k.png', 'Resolution', 300);
 
@@ -159,7 +159,7 @@ exportgraphics(G_k_plot, 'G_k.png', 'Resolution', 300);
     ĝ(n). Then use the D/A tool to convert it back to an analog signal 
     to check if it is audible.
 %}
-    
+
 scrambling_seq = ones(size(g_n));
 scrambling_seq(2:2:end) = -1;
 
@@ -168,7 +168,7 @@ g_hat_n = g_n .* scrambling_seq;
 G_hat_k = fft(g_hat_n);
 G_hat_k_shifted = fftshift(G_hat_k);
 
-figure(4);
+G_hat_k_plot = figure(4);
     spectrum_db = 20*log10(abs(G_hat_k_shifted) + eps);
     spectrum_smooth = smoothdata(spectrum_db, 'gaussian', 100);
     
@@ -176,11 +176,12 @@ figure(4);
     hold on;
     plot(f_axis, spectrum_smooth, 'b', 'LineWidth', 1);
     
-    xlabel('Frequency (Hz)');
+    xlabel('Frequency (kHz)');
     ylabel('Magnitude (dB)');
     title('Spectrum of Scrambled Speech');
     grid on;
-    set(gca, 'XScale', 'log');
+    % set(gca, 'XScale', 'log');
+exportgraphics(G_hat_k_plot, 'G_hat_k.png', 'Resolution', 300);
 
 % Save scrambled audio
 audiowrite('g_hat_n.wav', g_hat_n, f_s);
@@ -194,3 +195,69 @@ audiowrite('g_hat_n.wav', g_hat_n, f_s);
     offset produces an extra {-1} factor. It results in -g(t), instead 
     of g(t). Check if it is audible when the offset occurs.
 %}
+
+descrambled_g_n = g_hat_n .* scrambling_seq;
+
+audiowrite('descrambled_g_n.wav', descrambled_g_n, f_s);
+
+% Plot the middle 100 samples of g_n and descrambled_g_n
+mid_idx = floor(length(g_n)/2);
+range = (mid_idx-49):(mid_idx+50);
+
+middle_g_n = g_n(range);
+middle_descrambled_g_n = descrambled_g_n(range);
+
+middle_plot = figure (5);
+    subplot(2,1,1);
+    plot(range, middle_g_n, 'b', 'LineWidth', 1.5);
+    title('Middle 100 Samples of g\_n');
+    ylabel('Amplitude');
+    grid on;
+    set(gca, 'FontName', 'Times New Roman');
+
+    subplot(2,1,2);
+    plot(range, middle_descrambled_g_n, 'r', 'LineWidth', 1.5);
+    title('Middle 100 Samples of descrambled\_g\_n');
+    xlabel('Sample Index');
+    ylabel('Amplitude');
+    grid on;
+    set(gca, 'FontName', 'Times New Roman');
+
+exportgraphics(middle_plot, 'middle_gn_descrambled.png', 'Resolution', 300);
+
+
+
+%% III. Hilbert Transform
+
+%% 1. Periodic Signal f(t)
+%{
+    Hilbert transform the periodic signal f(t), plot and compare it to 
+    the original signal within one period.
+%}
+
+t = linspace(0, T, 1000); % Time vector for one period
+f_t = f(t); % Function values over one period
+hilbert_f_t = hilbert(f_t); 
+
+f_t_plot = figure(6);
+    plot(t, f_t, 'b', 'LineWidth', 2, 'DisplayName', 'Original f(t)');
+    hold on;
+    plot(t, real(hilbert_f_t), 'r--', 'LineWidth', 1.5, ...
+         'DisplayName', 'Hilbert Transform');
+    xlabel('Time (t)');
+    ylabel('f(t)');
+    legend('Location', 'best');
+    grid on;
+    axis([0 T -36 36]);
+    set(gca, 'FontName', 'Times New Roman');
+    alpha(0.7); % Add transparency to both plots
+exportgraphics(f_t_plot, 'f_t.png', 'Resolution', 300)
+
+%% 2. Speech Signal g(t)
+%{
+    Hilbert transform the speech signal g(t) and check if it is audible.
+%}
+
+hilbert_g_n = hilbert(g_n);
+
+audiowrite('hilbert_g_n.wav', real(hilbert_g_n), f_s);
