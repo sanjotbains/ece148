@@ -110,6 +110,7 @@ F_a_shifted = fftshift(fft(f_a));
     \caption{Comparison of 64-point and 16-point DFT}
 \end{figure}
 
+$F_a(k)$ seems to contain more information than $F(k)$, a more granular view of the component frequencies. I had to rescale the frequency axis to overlap the 64-pt and 16-pt sequences. The two plots are identical at every 4th point, where the 16-pt sequence is defined.
 
 \newpage
 \subsection*{2. Interpolation in Time Domain}
@@ -135,6 +136,8 @@ f_b = ifft(F_b);
     \includegraphics[width=0.8\textwidth]{f_b.png}
     \caption{Comparison of Interpolated Signal with Original Samples}
 \end{figure}
+
+Again, I had to do some scaling to preserve the total energy of the plot (See the $\times 4$ in the definition of $F_b$). Other than that, we can see the "identical-ity" of the two. $f_b(n)$ has more granularity than $f(n)$. 
 
 
 \newpage
@@ -172,6 +175,7 @@ scrambling_seq = ones(size(g_n));
 scrambling_seq(2:2:end) = -1;
 
 g_hat_n = g_n .* scrambling_seq;
+audiowrite('g_hat_n.wav', g_hat_n, f_s);
 
 G_hat_k = fft(g_hat_n);
 G_hat_k_shifted = fftshift(G_hat_k);
@@ -183,6 +187,8 @@ G_hat_k_shifted = fftshift(G_hat_k);
     \caption{Spectrum of Scrambled Speech}
 \end{figure}
 
+The scrambled audio $\hat{g}_n$ is completely unintelligible. It sounds like the high pitched squealing of an adult in a cartoon. Or the feverish screeches of a pulley that needs greasing. The speech is thouroughly "scrambled".
+
 
 \newpage
 \subsection*{3. Descrambling}
@@ -193,6 +199,8 @@ descrambled_g_n = g_hat_n .* scrambling_seq;
 
 audiowrite('descrambled_g_n.wav', descrambled_g_n, f_s);
 \end{lstlisting}
+
+The descrambled audio is completely intelligible. It seems no different at all from the original audio, qualitatively or quantitatively. I pulled up the graphs of each and the descrambled signal is not actually inverted. I did so myself by multiplying the whole thing by $-1$ and listened to thaat, which again, sounded exactly the same.
 
 \newpage
 \section*{III. Hilbert Transform}

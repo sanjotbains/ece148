@@ -240,6 +240,8 @@ f_t = f(t); % Function values over one period
 hilbert_f_t = hilbert(f_t); 
 
 f_t_plot = figure(6);
+
+subplot(2,1,1);
     plot(t, f_t, 'b', 'LineWidth', 2, 'DisplayName', 'Original f(t)');
     hold on;
     plot(t, real(hilbert_f_t), 'r--', 'LineWidth', 1.5, ...
@@ -251,6 +253,17 @@ f_t_plot = figure(6);
     axis([0 T -36 36]);
     set(gca, 'FontName', 'Times New Roman');
     alpha(0.7); % Add transparency to both plots
+    title('Magnitude');
+
+subplot(2,1,2);
+    plot(t, angle(hilbert_f_t), 'k', 'LineWidth', 1.5);
+    xlabel('Time (t)');
+    ylabel('Phase (rad)');
+    grid on;
+    axis([0 T -pi pi]*2); % Show a reasonable phase range
+    set(gca, 'FontName', 'Times New Roman');
+    title('Phase');
+
 exportgraphics(f_t_plot, 'f_t.png', 'Resolution', 300)
 
 %% 2. Speech Signal g(t)
